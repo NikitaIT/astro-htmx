@@ -1,0 +1,55 @@
+---
+import { Contact } from "../../../contacts_model";
+import Layout from "../../../layouts/Layout.astro";
+
+type Props = {
+  contact: {
+    id?: number;
+    first?: string;
+    last?: string;
+    phone?: string;
+    email?: string;
+  };
+};
+let { contact } = Astro.props;
+const { params, request, redirect } = Astro;
+
+const _contact = Contact.find(Number.parseInt(params.contact_id ?? "0", 10));
+contact ??= _contact ?? {};
+
+export const prerender = false;
+export const partial = true;
+
+switch (Astro.request.method) {
+  // @app.route("/contacts/<contact_id>", methods=["DELETE"])
+  case "DELETE": {
+    _contact?.delete();
+    break;
+  }
+}
+if (request.headers.get("HX-Trigger") === "delete-btn") {
+  // contacts_delete
+  //         flash("Deleted Contact!")
+  return redirect("/contacts", 303);
+}
+const isDel = Astro.request.method === "DELETE";
+---
+
+{
+   isDel ? (
+    <></>
+  ) : (<Layout>
+    <h1>{contact.first} {contact.last}</h1>
+  
+    <div>
+      <div>Phone: {contact.phone}</div>
+      <div>Email: {contact.email}</div>
+    </div>
+  
+    <p>
+      <a href=`/contacts/${contact.id}/edit`>Edit</a>
+      <a href="/contacts">Back</a>
+    </p>
+  </Layout>)
+}
+

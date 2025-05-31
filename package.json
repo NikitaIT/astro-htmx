@@ -9,6 +9,11 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^5.8.1"
+    "astro": "^5.8.1",
+    "dev": "^0.1.3",
+    "typed-htmx": "^0.3.1"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.15"
   }
 }

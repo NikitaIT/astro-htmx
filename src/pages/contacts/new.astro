@@ -1,0 +1,111 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { Contact } from "../../contacts_model";
+import type { APIRoute } from "astro";
+
+type ContactProp = {
+  id?: number;
+  email?: string;
+  first?: string;
+  last?: string;
+  phone?: string;
+  errors: Record<string, string>;
+};
+type Props = {
+  contact: ContactProp;
+};
+let { contact } = Astro.props;
+
+contact ??= { errors: {} };
+
+export const prerender = false; // request.headers is empty without it on post requests
+
+// @app.route("/contacts/new", methods=['POST'])
+const POST = async function contacts_new({
+  params,
+  request,
+  redirect,
+  getActionResult,
+}: Parameters<APIRoute>[0]): Promise<Response | void> {
+  const formData = await request.formData();
+  const _contact = new Contact({
+    first: formData.get("first_name")?.toString(),
+    last: formData.get("last_name")?.toString(),
+    phone: formData.get("phone")?.toString(),
+    email: formData.get("email")?.toString(),
+  });
+  if (_contact.save()) {
+    // flash("Created New Contact!")
+    return redirect("/contacts");
+  } else {
+    contact = _contact;
+    return;
+  }
+};
+
+if (Astro.request.method === "POST") {
+  const result = await POST(Astro);
+  if (result instanceof Response) {
+    return result; // Return the response directly if it's a Response object
+  }
+}
+---
+
+<Layout>
+  <form action="/contacts/new" method="post">
+    <fieldset>
+      <legend>Contact Values</legend>
+      <div class="table rows">
+        <p>
+          <label for="email">Email</label>
+          <input
+            name="email"
+            id="email"
+            type="text"
+            placeholder="Email"
+            value={contact.email ?? ""}
+          />
+          <span class="error">{contact.errors["email"]}</span>
+        </p>
+        <p>
+          <label for="first_name">First Name</label>
+          <input
+            name="first_name"
+            id="first_name"
+            type="text"
+            placeholder="First Name"
+            value={contact.first ?? ""}
+          />
+          <span class="error">{contact.errors["first"]}</span>
+        </p>
+        <p>
+          <label for="last_name">Last Name</label>
+          <input
+            name="last_name"
+            id="last_name"
+            type="text"
+            placeholder="Last Name"
+            value={contact.last ?? ""}
+          />
+          <span class="error">{contact.errors["last"]}</span>
+        </p>
+        <p>
+          <label for="phone">Phone</label>
+          <input
+            name="phone"
+            id="phone"
+            type="text"
+            placeholder="Phone"
+            value={contact.phone ?? ""}
+          />
+          <span class="error">{contact.errors["phone"]}</span>
+        </p>
+      </div>
+      <button>Save</button>
+    </fieldset>
+  </form>
+
+  <p>
+    <a href="/contacts">Back</a>
+  </p>
+</Layout>

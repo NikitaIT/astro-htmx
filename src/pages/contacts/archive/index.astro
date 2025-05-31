@@ -1,0 +1,22 @@
+---
+import { Archiver } from "../../../contacts_model";
+import ArchiveUi from "../archive_ui.astro";
+
+const archiver = Archiver.get();
+
+// @app.route("/contacts/archive", methods=["POST"])
+switch (Astro.request.method) {
+  case "POST": {
+    // start_archive
+    archiver.run();
+    break;
+  }
+  case "DELETE": {
+    // stop_archive
+    archiver.reset();
+    break;
+  }
+}
+---
+
+<ArchiveUi archiver={archiver} />
